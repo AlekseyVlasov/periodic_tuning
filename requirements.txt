@@ -1,0 +1,7 @@
+pytorch_warmup
+wandb
+matplotlib
+torch==2.9.1
+datasets
+transformers
+peft
