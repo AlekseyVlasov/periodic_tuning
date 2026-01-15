@@ -1,0 +1,41 @@
+seed: 42
+output_dir: outputs/pretrain_needle
+
+model:
+  config:
+    hidden_size: 8
+    state_size: 4
+    num_hidden_layers: 2
+
+training:
+  num_train_epochs: 30
+  learning_rate: 0.01
+  weight_decay: 0.0
+  logging_steps: 50
+  evaluation_strategy: epoch
+  save_strategy: epoch
+  gradient_accumulation_steps: 1
+  warmup_steps: 0
+
+wandb:
+  enabled: true
+  init:
+    project: needle-pretrain
+    name: needle-pretrain-16
+
+task:
+  name: needle
+  seed: 42
+  vocab_size: 16
+  train:
+    n_examples: 16000
+    max_seq_len: 16
+    vary_length: true
+    batch_size: 512
+    num_workers: 8
+  eval:
+    n_examples: 100000
+    max_seq_len: 256
+    vary_length: false
+    batch_size: 512
+    num_workers: 8
