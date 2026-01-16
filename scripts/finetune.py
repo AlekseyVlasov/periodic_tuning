@@ -91,6 +91,9 @@ def main():
                 eval_dataset=self.train_dataset,
                 metric_key_prefix="train",
             )
+            control.should_evaluate = True
+            control.should_log = True
+            return control
 
     trainer.add_callback(TrainEvalCallback(trainer, train_ds))
 
