@@ -1,4 +1,4 @@
-import trackio as wandb  # type: ignore
+import wandb
 
 
 def init_wandb(cfg):
