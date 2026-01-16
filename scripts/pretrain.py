@@ -7,7 +7,7 @@ from transformers import TrainingArguments
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from training.common import load_config, ensure_dir, save_config
-from training.logging import init_wandb, wandb
+from training.logging import init_wandb
 from transformers import TrainerCallback
 from training.models import build_base_model
 from training.needle_trainer import NeedleTrainer
@@ -17,7 +17,8 @@ from utils import fix_seed
 
 def build_training_args(cfg, task_cfg):
     train_cfg = cfg["training"]
-    wandb_enabled = bool(cfg.get("wandb", {}).get("enabled", False))
+    wandb_cfg = cfg.get("wandb", {})
+    wandb_enabled = bool(wandb_cfg.get("enabled", False))
 
     return TrainingArguments(
         output_dir=cfg["output_dir"],
@@ -34,6 +35,7 @@ def build_training_args(cfg, task_cfg):
         dataloader_num_workers=task_cfg["train"].get("num_workers", 0),
         remove_unused_columns=False,
         report_to=["wandb"] if wandb_enabled else [],
+        run_name=wandb_cfg.get("init", {}).get("name"),
         seed=cfg["seed"],
     )
 
@@ -94,7 +96,7 @@ def main():
     final_dir = os.path.join(cfg["output_dir"], "final")
     trainer.save_model(final_dir)
     if wandb_run is not None:
-        wandb.finish()
+        wandb_run.finish()
 
 
 if __name__ == "__main__":
