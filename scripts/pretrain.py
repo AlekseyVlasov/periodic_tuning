@@ -8,7 +8,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from training.common import load_config, ensure_dir, save_config
 from training.logging import init_wandb
-import wandb
 from transformers import TrainerCallback
 from training.models import build_base_model
 from training.needle_trainer import NeedleTrainer
@@ -78,25 +77,16 @@ def main():
         callbacks=callbacks,
     )
 
-    if wandb_run is not None:
-        class WandbEvalCallback(TrainerCallback):
-            def on_evaluate(self, args, state, control, metrics=None, **kwargs):
-                if metrics:
-                    wandb.log(metrics, step=state.global_step)
-
-        trainer.add_callback(WandbEvalCallback())
-
     class TrainEvalCallback(TrainerCallback):
         def __init__(self, trainer_ref, train_dataset):
             self.trainer_ref = trainer_ref
             self.train_dataset = train_dataset
 
         def on_epoch_end(self, args, state, control, **kwargs):
-            metrics = self.trainer_ref.evaluate(
+            self.trainer_ref.evaluate(
                 eval_dataset=self.train_dataset,
                 metric_key_prefix="train",
             )
-            self.trainer_ref.log(metrics)
 
     trainer.add_callback(TrainEvalCallback(trainer, train_ds))
 
