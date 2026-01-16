@@ -6,7 +6,7 @@ from training.needle_utils import get_logits, paste_pos_for_model, logits_at_pas
 
 
 class NeedleTrainer(Trainer):
-    def compute_loss(self, model, inputs, return_outputs=False):
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
         inputs = dict(inputs)
         labels = inputs.pop("labels")
         lengths = inputs.pop("lengths")
