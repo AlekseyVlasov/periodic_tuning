@@ -64,7 +64,7 @@ def main():
     tuning_cfg = cfg["tuning"]
     model = apply_tuning(model, tuning_cfg)
 
-    train_ds, eval_ds, eval_long_ds = task.build_train_eval()
+    train_ds, eval_ds, extra_eval = task.build_train_eval()
     collator = task.collator()
 
     training_args = build_training_args(cfg, task_cfg)
@@ -97,6 +97,25 @@ def main():
             return control
 
     trainer.add_callback(TrainEvalCallback(trainer, train_ds))
+    if extra_eval:
+        class ExtraEvalCallback(TrainerCallback):
+            def __init__(self, trainer_ref, extra_eval_map):
+                self.trainer_ref = trainer_ref
+                self.extra_eval_map = extra_eval_map
+                self._orig_eval_bs = trainer_ref.args.per_device_eval_batch_size
+
+            def on_epoch_end(self, args, state, control, **kwargs):
+                for name, info in self.extra_eval_map.items():
+                    eval_bs = info.get("batch_size")
+                    if eval_bs is not None:
+                        self.trainer_ref.args.per_device_eval_batch_size = eval_bs
+                    self.trainer_ref.evaluate(
+                        eval_dataset=info["dataset"],
+                        metric_key_prefix=name,
+                    )
+                self.trainer_ref.args.per_device_eval_batch_size = self._orig_eval_bs
+
+        trainer.add_callback(ExtraEvalCallback(trainer, extra_eval))
 
     trainer.train()
 
@@ -106,11 +125,6 @@ def main():
     else:
         trainer.save_model(final_dir)
 
-    if eval_long_ds is not None:
-        eval_long_bs = task_cfg.get("eval_long", {}).get("batch_size")
-        if eval_long_bs is not None:
-            trainer.args.per_device_eval_batch_size = eval_long_bs
-        trainer.evaluate(eval_dataset=eval_long_ds, metric_key_prefix="eval_long")
     if wandb_run is not None:
         wandb_run.finish()
 

@@ -37,10 +37,17 @@ class NeedleTask:
     def build_train_eval(self):
         train_ds = self.build_dataset(self.cfg.train)
         eval_ds = self.build_dataset(self.cfg.eval)
-        eval_long_ds = None
+        extra_eval = self.build_extra_eval()
+        return train_ds, eval_ds, extra_eval
+
+    def build_extra_eval(self):
+        extra = {}
         if self.cfg.eval_long is not None:
-            eval_long_ds = self.build_dataset(self.cfg.eval_long)
-        return train_ds, eval_ds, eval_long_ds
+            extra["eval_long"] = {
+                "dataset": self.build_dataset(self.cfg.eval_long),
+                "batch_size": self.cfg.eval_long.get("batch_size"),
+            }
+        return extra
 
     def collator(self):
         cfg = NeedleCfg(vocab_size=self.cfg.vocab_size, max_seq_len=3)
