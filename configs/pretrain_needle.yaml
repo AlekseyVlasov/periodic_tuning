@@ -14,14 +14,15 @@ training:
   logging_steps: 50
   eval_strategy: epoch
   save_strategy: epoch
+  save_total_limit: 2
   gradient_accumulation_steps: 1
   warmup_steps: 0
 
 wandb:
   enabled: true
   init:
-    project: needle-pretrain
-    name: needle-pretrain-16
+    project: periodic_tuning
+    name: needle_pretrain_16
 
 task:
   name: needle
@@ -34,7 +35,7 @@ task:
     batch_size: 512
     num_workers: 8
   eval:
-    n_examples: 100000
+    n_examples: 4000
     max_seq_len: 256
     vary_length: false
     batch_size: 512
