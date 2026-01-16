@@ -25,7 +25,7 @@ def build_training_args(cfg, task_cfg):
         per_device_train_batch_size=task_cfg["train"]["batch_size"],
         per_device_eval_batch_size=task_cfg["eval"]["batch_size"],
         logging_steps=train_cfg.get("logging_steps", 50),
-        evaluation_strategy=train_cfg.get("evaluation_strategy", "epoch"),
+        eval_strategy=train_cfg.get("eval_strategy", train_cfg.get("evaluation_strategy", "epoch")),
         save_strategy=train_cfg.get("save_strategy", "epoch"),
         gradient_accumulation_steps=train_cfg.get("gradient_accumulation_steps", 1),
         warmup_steps=train_cfg.get("warmup_steps", 0),
