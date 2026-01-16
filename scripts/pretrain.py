@@ -36,6 +36,7 @@ def build_training_args(cfg, task_cfg):
         remove_unused_columns=False,
         report_to=["wandb"] if wandb_enabled else [],
         run_name=wandb_cfg.get("init", {}).get("name"),
+        save_safetensors=False,
         seed=cfg["seed"],
     )
 
