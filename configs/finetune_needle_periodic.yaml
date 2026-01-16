@@ -1,0 +1,51 @@
+seed: 42
+output_dir: outputs/finetune_needle_periodic
+
+model:
+  pretrained_name_or_path: outputs/pretrain_needle/final
+
+training:
+  num_train_epochs: 15
+  learning_rate: 0.001
+  weight_decay: 0.0
+  logging_steps: 50
+  eval_strategy: epoch
+  save_strategy: epoch
+  gradient_accumulation_steps: 1
+  warmup_steps: 0
+
+wandb:
+  enabled: true
+  init:
+    project: periodic_tuning
+    name: needle_finetune_periodic_20_40
+
+tuning:
+  method: periodic
+  periodic:
+    n_prompt: 20
+    period: 40
+    freeze_base: true
+
+task:
+  name: needle
+  seed: 42
+  vocab_size: 16
+  train:
+    n_examples: 64000
+    max_seq_len: 256
+    vary_length: true
+    batch_size: 512
+    num_workers: 8
+  eval:
+    n_examples: 10000
+    max_seq_len: 256
+    vary_length: false
+    batch_size: 512
+    num_workers: 8
+  eval_long:
+    n_examples: 10000
+    max_seq_len: 1024
+    vary_length: false
+    batch_size: 256
+    num_workers: 8
