@@ -50,16 +50,8 @@ class NeedleTask:
         logits, labels = eval_pred
         if isinstance(logits, (tuple, list)):
             logits = logits[0]
-
-        labels = labels.reshape(-1)
-        logits = logits.reshape(-1, logits.shape[-1])
-
-        mask = labels != -100
-        if mask.sum() == 0:
-            return {"accuracy": 0.0}
-
-        pred_ids = np.argmax(logits[mask], axis=-1)
-        acc = (pred_ids == labels[mask]).mean()
+        pred_ids = np.argmax(logits, axis=-1)
+        acc = (pred_ids == labels).mean()
         return {"accuracy": float(acc)}
 
 

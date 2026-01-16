@@ -109,28 +109,24 @@ class PadCollate:
 
 class NeedleCausalLMCollator:
     """
-    Collate for CausalLM-style training on Needle.
+    Collate for Needle training.
 
     Returns:
       input_ids:      [B, T]
       attention_mask: [B, T]
-      labels:         [B, T] with -100 except the PASTE position
+      labels:         [B]
+      lengths:        [B]
     """
     def __init__(self, cfg: NeedleCfg):
         self._pad = PadCollate(cfg)
 
     def __call__(self, batch):
-        input_ids, labels_scalar, attention_mask, lengths = self._pad(batch)
-
-        B, T = input_ids.shape
-        labels = input_ids.new_full((B, T), -100)
-        idx = torch.arange(B)
-        labels[idx, lengths - 1] = labels_scalar
-
+        input_ids, labels, attention_mask, lengths = self._pad(batch)
         return {
             "input_ids": input_ids,
             "attention_mask": attention_mask,
             "labels": labels,
+            "lengths": lengths,
         }
 
 

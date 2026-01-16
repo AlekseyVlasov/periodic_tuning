@@ -2,13 +2,15 @@ import argparse
 import os
 import sys
 
-from transformers import Trainer, TrainingArguments
+from transformers import TrainingArguments
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from training.common import load_config, ensure_dir, save_config
 from training.logging import init_wandb, WandbCallback
+from transformers import TrainerCallback
 from training.models import build_base_model
+from training.needle_trainer import NeedleTrainer
 from training.tasks import build_task
 from utils import fix_seed
 
@@ -64,7 +66,7 @@ def main():
     if wandb_run is not None:
         callbacks.append(WandbCallback())
 
-    trainer = Trainer(
+    trainer = NeedleTrainer(
         model=model,
         args=training_args,
         train_dataset=train_ds,
@@ -73,6 +75,19 @@ def main():
         compute_metrics=task.compute_metrics,
         callbacks=callbacks,
     )
+
+    class TrainEvalCallback(TrainerCallback):
+        def __init__(self, trainer_ref, train_dataset):
+            self.trainer_ref = trainer_ref
+            self.train_dataset = train_dataset
+
+        def on_epoch_end(self, args, state, control, **kwargs):
+            self.trainer_ref.evaluate(
+                eval_dataset=self.train_dataset,
+                metric_key_prefix="train",
+            )
+
+    trainer.add_callback(TrainEvalCallback(trainer, train_ds))
 
     trainer.train()
 
