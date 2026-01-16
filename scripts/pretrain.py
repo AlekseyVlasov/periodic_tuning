@@ -82,10 +82,11 @@ def main():
             self.train_dataset = train_dataset
 
         def on_epoch_end(self, args, state, control, **kwargs):
-            self.trainer_ref.evaluate(
+            metrics = self.trainer_ref.evaluate(
                 eval_dataset=self.train_dataset,
                 metric_key_prefix="train",
             )
+            self.trainer_ref.log(metrics)
 
     trainer.add_callback(TrainEvalCallback(trainer, train_ds))
 
