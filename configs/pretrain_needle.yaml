@@ -12,7 +12,7 @@ training:
   learning_rate: 0.01
   weight_decay: 0.0
   logging_steps: 50
-  evaluation_strategy: epoch
+  eval_strategy: epoch
   save_strategy: epoch
   gradient_accumulation_steps: 1
   warmup_steps: 0
