@@ -8,7 +8,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from training.checkpointing import save_tuned_model
 from training.common import load_config, ensure_dir, save_config
-from training.logging import init_wandb, WandbCallback, wandb
+from training.logging import init_wandb, wandb
 from transformers import TrainerCallback
 from training.models import apply_tuning, build_base_model, is_periodic_tuning
 from training.needle_trainer import NeedleTrainer
@@ -18,6 +18,7 @@ from utils import fix_seed
 
 def build_training_args(cfg, task_cfg):
     train_cfg = cfg["training"]
+    wandb_enabled = bool(cfg.get("wandb", {}).get("enabled", False))
 
     return TrainingArguments(
         output_dir=cfg["output_dir"],
@@ -33,7 +34,7 @@ def build_training_args(cfg, task_cfg):
         warmup_steps=train_cfg.get("warmup_steps", 0),
         dataloader_num_workers=task_cfg["train"].get("num_workers", 0),
         remove_unused_columns=False,
-        report_to=[],
+        report_to=["wandb"] if wandb_enabled else [],
         seed=cfg["seed"],
     )
 
@@ -67,8 +68,6 @@ def main():
 
     wandb_run = init_wandb(cfg.get("wandb"))
     callbacks = []
-    if wandb_run is not None:
-        callbacks.append(WandbCallback())
 
     trainer = NeedleTrainer(
         model=model,
@@ -109,6 +108,8 @@ def main():
         metrics = trainer.evaluate(eval_dataset=eval_long_ds, metric_key_prefix="eval_long")
         if wandb_run is not None:
             wandb.log(metrics, step=trainer.state.global_step)
+    if wandb_run is not None:
+        wandb.finish()
 
 
 if __name__ == "__main__":
