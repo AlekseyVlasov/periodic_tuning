@@ -52,6 +52,8 @@ def main():
 
     model_cfg = cfg["model"]
     model = build_base_model(model_cfg, task.vocab_size_with_specials())
+    if hasattr(model, "config"):
+        model.config.use_cache = False
 
     tuning_cfg = cfg["tuning"]
     model = apply_tuning(model, tuning_cfg)

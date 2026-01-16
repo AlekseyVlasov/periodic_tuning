@@ -51,6 +51,8 @@ def main():
 
     model_cfg = cfg["model"]
     model = build_base_model(model_cfg, task.vocab_size_with_specials())
+    if hasattr(model, "config"):
+        model.config.use_cache = False
 
     train_ds, eval_ds, _ = task.build_train_eval()
     collator = task.collator()
